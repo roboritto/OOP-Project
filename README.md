@@ -7,14 +7,14 @@ Project Name:
 Project Members:
 1. Nur Adlin Aliya bt Fakri Zaki (24003411)
 2. Nurul Imanunnadhirah bt Mohd Shafaruddin ()
-3. Nur Aisya Sofia bt Yusri ()
+3. Nur Aisya Sofia bt Yusri (24002949)
 4. Muhammad Harith Iskandar b Mahathir (24003426)
 5. Aisar Fahmi b Zamri ()
 6. Muhammad Hakim Asyraf b Mohd Zuhri ()
 
 Task and Project Management
 
-Descirption: A comprehensive platform where small business can manage project, assign tasks, set deadlines, and track progress in real time.
+Description: A comprehensive platform where small business can manage project, assign tasks, set deadlines, and track progress in real time.
 
 1. Key Features:
    - Create, edit, and delete projects and tasks
