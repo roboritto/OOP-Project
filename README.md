@@ -30,9 +30,7 @@ Description: A comprehensive platform where small business can manage project, a
 
 3. Advanced Collaborations Features:
    - Real-Time collaboration: Allow multiple users to edit a task or project      description simultaneously, similar to how Google Docs handles document      editing.
-   - Built-in Video Conferencing: Integrate video conferencing features           directly within the tool for quick team meetings or discussions about a      specific task without needing external apps like Zoom or Teams.
    - Discussion Threads on Tasks: Embed discussion threads under each task,       enabling team members to have ongoing conversations directly linked to       the task for better context.
-   - Whiteboard Feature: Add an interactive digital whiteboard for                brainstorming ideas and planning tasks collaboratively in real time.
   
 5. Research on existing websites:
      Several project management tools exist, but most are designed for large      enterprises or come with a steep learning curve. Our tool will draw          inspiration from the following existing solutions while simplifying          them for small businesses:
