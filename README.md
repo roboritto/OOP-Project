@@ -36,3 +36,5 @@ Description: A comprehensive platform where small business can manage project, a
      Several project management tools exist, but most are designed for large      enterprises or come with a steep learning curve. Our tool will draw          inspiration from the following existing solutions while simplifying          them for small businesses:
      - Asana: Offers task management, project timelines, and tracking, but          its features can be overwhelming for smaller teams.
      - ClickUp: A highly customizable tool offering a variety of views              (lists, boards, Gantt charts) and features such as time tracking,            goal tracking, and document collaboration. While ClickUp is                  versatile, its rich feature set can be overwhelming for small                businesses with simpler needs.
+
+![image](https://github.com/user-attachments/assets/de249910-c448-4bf9-bc74-b5bef962f46b)
