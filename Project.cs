@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OOP_Web
 {
-    public class Project
+    public class Project : Project_List
     {
         public string DESCRIPTION { get; set; }
         public List <string> TASK_LIST;
