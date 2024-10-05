@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OOP_Web
 {
-    public class Team_Members
+    public class Team_Members : Team_List
     {
         public string NAME { get; set; }
         public string EMAIL { get; set; }
