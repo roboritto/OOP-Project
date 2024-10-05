@@ -6,7 +6,7 @@ Project Name:
 
 Project Members:
 1. Nur Adlin Aliya bt Fakri Zaki (24003411)
-2. Nurul Imanunnadhirah bt Mohd Shafaruddin ()
+2. Nurul Imanunnadhirah bt Mohd Shafaruddin (24003464)
 3. Nur Aisya Sofia bt Yusri (24002949)
 4. Muhammad Harith Iskandar b Mahathir (24003426)
 5. Aisar Fahmi b Zamri (22010490)
