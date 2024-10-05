@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OOP_Web
 {
-    public class Task
+    public class Task : Task_List
     {
         public string DESCRIPTION { get; set; }
         public string STATUS { get; set; }
