@@ -12,7 +12,7 @@ namespace WebProgram
     {
         static void Main(string[] args)
         {
-            Project p1 = new Project("Adlin", "Aliya", 324.234, DateTime.Now, Progress.Completed);
+            Project p1 = new Project("Verstappen", "Mad Max", 324.234, DateTime.Now, Progress.Completed);
             ProjectList projects = new ProjectList();
             projects.Add(p1);
 
