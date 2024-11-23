@@ -1,0 +1,165 @@
+﻿@using Google.Cloud.Firestore;
+@page "/team-app"
+
+<head>
+    <style>
+            body {
+            background-image: url('IMG_2660.JPG');
+
+        }
+    </style>
+</head>
+
+<h6 style="font-size:300%; font-family:'Comic Sans MS', cursive; background-color:mintcream;"> Team Management </h6>
+
+
+<!-- Team Form -->
+<div class="form-group">
+    <label for="teamName">Team Name</label>
+    <input type="text" id="teamName" @bind="newTeamName" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label for="teamMembers">Team Members (Comma-separated)</label>
+    <textarea id="teamMembers" @bind="newTeamMembers" class="form-control"></textarea>
+</div>
+
+<button class="btn btn-primary" @onclick="SaveTeam">@((isEditing ? "Update Team" : "Add Team"))</button>
+<button class="btn btn-secondary" @onclick="CancelEdit" style="display: @(isEditing ? "inline" : "none")">Cancel</button>
+
+<hr />
+
+<!-- Link to Team List Page -->
+<p>
+    <a class="btn btn-info" href="/team-list">View Team List</a>
+</p>
+
+@code {
+    FirestoreDb db = FirestoreDb.Create("oop-website-9ba5d");
+
+    public class Team
+    {
+        public string Id { get; set; }
+        public string TeamName { get; set; }
+        public List<string> Members { get; set; }
+    }
+
+    private List<Team> teams = new();
+    private string newTeamName = "";
+    private string newTeamMembers = "";
+    private string editTeamId = null;
+    private bool isEditing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshTeamList();
+    }
+
+    private async Task RefreshTeamList()
+    {
+        try
+        {
+            CollectionReference collection = db.Collection("teams");
+            QuerySnapshot docs = await collection.GetSnapshotAsync();
+
+            var teamList = new List<Team>();
+            foreach (var doc in docs.Documents)
+            {
+                teamList.Add(new Team
+                    {
+                        Id = doc.Id,
+                        TeamName = doc.Id, // Document ID is the team name
+                        Members = doc.GetValue<List<string>>("Members")
+                    });
+            }
+            teams = teamList;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching teams: {ex.Message}");
+        }
+    }
+
+    private async Task SaveTeam()
+    {
+        if (string.IsNullOrWhiteSpace(newTeamName) || string.IsNullOrWhiteSpace(newTeamMembers))
+        {
+            Console.WriteLine("Error: Team Name and Members are required.");
+            return;
+        }
+
+        try
+        {
+            var membersList = newTeamMembers
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(m => m.Trim())
+                .ToList();
+
+            if (isEditing)
+            {
+                // Update the team in Firestore
+                DocumentReference docRef = db.Document($"teams/{editTeamId}");
+                await docRef.SetAsync(new
+                {
+                    TeamName = newTeamName,
+                    Members = membersList
+                });
+
+                Console.WriteLine($"Team {editTeamId} updated successfully.");
+            }
+            else
+            {
+                // Add a new team with the TeamName as the document ID
+                DocumentReference docRef = db.Document($"teams/{newTeamName}");
+                await docRef.SetAsync(new
+                {
+                    TeamName = newTeamName,
+                    Members = membersList
+                });
+
+                Console.WriteLine($"New team {newTeamName} added successfully.");
+            }
+
+            // Reset form
+            ResetForm();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving team: {ex.Message}");
+        }
+    }
+
+    private void EditTeam(Team team)
+    {
+        newTeamName = team.TeamName;
+        newTeamMembers = string.Join(", ", team.Members);
+        editTeamId = team.Id;
+        isEditing = true;
+    }
+
+    private async Task DeleteTeam(string id)
+    {
+        try
+        {
+            DocumentReference docRef = db.Document($"teams/{id}");
+            await docRef.DeleteAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting team: {ex.Message}");
+        }
+    }
+
+    private void CancelEdit()
+    {
+        ResetForm();
+    }
+
+    private void ResetForm()
+    {
+        newTeamName = "";
+        newTeamMembers = "";
+        editTeamId = null;
+        isEditing = false;
+    }
+}

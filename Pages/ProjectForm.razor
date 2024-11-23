@@ -1,0 +1,221 @@
+﻿@using Google.Cloud.Firestore
+@page "/project-app"
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<head>
+    <style>
+        body {
+            background-image: url('IMG_2658.JPG');
+        }
+    </style>
+</head>
+
+<h6 style="font-size:300%; font-family:'Comic Sans MS', cursive; background-color:lightgoldenrodyellow;"> Project Form </h6>
+
+<!-- Search and Sort -->
+<div class="form-group">
+    <label for="searchQuery">Search Projects</label>
+    <input type="text" id="searchQuery" @bind="searchQuery" class="form-control" placeholder="Search by project name..." @oninput="FilterProjects" />
+</div>
+
+<div class="form-group">
+    <label for="sortOrder">Sort Projects By</label>
+    <select id="sortOrder" @bind="sortOrder" class="form-control">
+        <option value="dueDateAsc">Due Date (Earliest to Latest)</option>
+        <option value="dueDateDesc">Due Date (Latest to Earliest)</option>
+        <option value="progressAsc">Progress (To Do -> In Progress -> Completed)</option>
+        <option value="progressDesc">Progress (Completed -> In Progress -> To Do)</option>
+    </select>
+</div>
+
+<!-- Form to Input Project Details -->
+<div class="form-group">
+    <label for="newProjectName">Project Name</label>
+    <input type="text" id="newProjectName" @bind="newProjectName" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label for="newDueDate">Due Date</label>
+    <input type="date" id="newDueDate" @bind="newDueDate" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label for="newProgress">Progress</label>
+    <select id="newProgress" @bind="newProgress" class="form-control">
+        <option value="To Do">To Do</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+    </select>
+</div>
+
+<button class="btn btn-primary" @onclick="SaveProject">@((isEditing ? "Update Project" : "Add Project"))</button>
+
+<hr />
+
+<!-- Project List -->
+<h6 style="font-size:300%; font-family:'Comic Sans MS', cursive; background-color:lightgoldenrodyellow;"> Project List </h6>
+@if (filteredProjects.Any())
+{
+    @foreach (var project in filteredProjects)
+    {
+        <div class="project-item">
+            <p>
+                <b>Project Name:</b> @project.ProjectName <br />
+                <b>Progress:</b> @project.Progress <br />
+                <b>Due Date:</b> @project.DueDate?.ToString("d") <br />
+            </p>
+
+            <!-- Button to navigate to work details page for this project -->
+            <button class="btn btn-secondary" @onclick="() => NavigateToWorkDetails(project.ProjectName)">Manage Work Details</button>
+
+            <!-- Edit and Delete Buttons -->
+            <button class="btn btn-warning btn-sm" @onclick="() => EditProject(project)">Edit</button>
+            <button class="btn btn-danger btn-sm" @onclick="() => DeleteProject(project)">Delete</button>
+            <hr />
+        </div>
+    }
+}
+else
+{
+    <p>No projects available.</p>
+}
+
+@code {
+    FirestoreDb db = FirestoreDb.Create("oop-website-9ba5d");
+
+    public class Project
+    {
+        public string Id { get; set; }
+        public string ProjectName { get; set; }
+        public DateTime? DueDate { get; set; }
+        public string Progress { get; set; }
+    }
+
+    private List<Project> projects = new();
+    private List<Project> filteredProjects => FilterAndSortProjects();
+    private string newProjectName = "";
+    private DateTime? newDueDate;
+    private string newProgress = "To Do";
+    private string searchQuery = "";
+    private string sortOrder = "dueDateAsc"; // Default sorting by due date (ascending)
+    private bool isEditing = false;
+    private string editProjectId = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProjects();
+    }
+
+    // Save or update the project
+    private async Task SaveProject()
+    {
+        if (string.IsNullOrWhiteSpace(newProjectName)) return;
+
+        var utcDueDate = newDueDate?.ToUniversalTime();
+
+        if (isEditing)
+        {
+            DocumentReference docRef = db.Document($"projects/{editProjectId}");
+            await docRef.SetAsync(new { ProjectName = newProjectName, DueDate = utcDueDate, Progress = newProgress });
+        }
+        else
+        {
+            DocumentReference docRef = db.Document($"projects/{newProjectName}");
+            await docRef.SetAsync(new { ProjectName = newProjectName, DueDate = utcDueDate, Progress = newProgress });
+        }
+
+        ResetForm();
+        await LoadProjects();
+    }
+
+    // Load Projects from Firestore
+    private async Task LoadProjects()
+    {
+        try
+        {
+            CollectionReference collection = db.Collection("projects");
+            QuerySnapshot docs = await collection.GetSnapshotAsync();
+
+            var projectList = new List<Project>();
+            foreach (var doc in docs.Documents)
+            {
+                projectList.Add(new Project
+                    {
+                        Id = doc.Id,
+                        ProjectName = doc.ContainsField("ProjectName") ? doc.GetValue<string>("ProjectName") : doc.Id,
+                        DueDate = doc.ContainsField("DueDate") ? doc.GetValue<DateTime?>("DueDate") : null,
+                        Progress = doc.ContainsField("Progress") ? doc.GetValue<string>("Progress") : "To Do"
+                    });
+            }
+            projects = projectList;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading projects: {ex.Message}");
+        }
+    }
+
+    // Reset the form inputs after saving
+    private void ResetForm()
+    {
+        newProjectName = "";
+        newDueDate = null;
+        newProgress = "To Do";
+        isEditing = false;
+        editProjectId = null;
+    }
+
+    // Navigate to Work Details Page for the selected project
+    private void NavigateToWorkDetails(string projectName)
+    {
+        Navigation.NavigateTo($"/workdetails/{projectName}");
+    }
+
+    // Edit a project
+    private void EditProject(Project project)
+    {
+        newProjectName = project.ProjectName;
+        newDueDate = project.DueDate;
+        newProgress = project.Progress;
+        editProjectId = project.Id;
+        isEditing = true;
+    }
+
+    // Delete a project
+    private async Task DeleteProject(Project project)
+    {
+        DocumentReference docRef = db.Document($"projects/{project.Id}");
+        await docRef.DeleteAsync();
+        await LoadProjects();
+    }
+
+    // Filter and Sort Projects
+    private List<Project> FilterAndSortProjects()
+    {
+        var filtered = string.IsNullOrWhiteSpace(searchQuery)
+            ? projects
+            : projects.Where(p => p.ProjectName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        // Sorting logic
+        switch (sortOrder)
+        {
+            case "dueDateAsc":
+                return filtered.OrderBy(p => p.DueDate).ToList();
+            case "dueDateDesc":
+                return filtered.OrderByDescending(p => p.DueDate).ToList();
+            case "progressAsc":
+                return filtered.OrderBy(p => p.Progress).ToList();
+            case "progressDesc":
+                return filtered.OrderByDescending(p => p.Progress).ToList();
+            default:
+                return filtered;
+        }
+    }
+
+    // Filter Projects as the user types in the search box
+    private void FilterProjects()
+    {
+        // The filteredProjects property will automatically recalculate when the searchQuery changes.
+    }
+}
